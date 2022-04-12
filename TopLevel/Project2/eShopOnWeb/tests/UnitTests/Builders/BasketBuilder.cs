@@ -1,39 +1,34 @@
 ﻿using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
-using Moq;
 
-namespace Microsoft.eShopWeb.UnitTests.Builders;
-
-public class BasketBuilder
+namespace Microsoft.eShopWeb.UnitTests.Builders
 {
-    private Basket _basket;
-    public string BasketBuyerId => "testbuyerId@test.com";
-
-    public int BasketId => 1;
-
-    public BasketBuilder()
+    public class BasketBuilder
     {
-        _basket = WithNoItems();
-    }
+        private Basket _basket;
+        public string BasketBuyerId => "testbuyerId@test.com";
+        public int BasketId => 1;
 
-    public Basket Build()
-    {
-        return _basket;
-    }
+        public BasketBuilder()
+        {
+            _basket = WithNoItems();
+        }
 
-    public Basket WithNoItems()
-    {
-        var basketMock = new Mock<Basket>(BasketBuyerId);
-        basketMock.SetupGet(s => s.Id).Returns(BasketId);
+        public Basket Build()
+        {
+            return _basket;
+        }
 
-        _basket = basketMock.Object;
-        return _basket;
-    }
+        public Basket WithNoItems()
+        {
+            _basket = new Basket { BuyerId = BasketBuyerId, Id = BasketId };
+            return _basket;
+        }
 
-    public Basket WithOneBasketItem()
-    {
-        var basketMock = new Mock<Basket>(BasketBuyerId);
-        _basket = basketMock.Object;
-        _basket.AddItem(2, 3.40m, 4);
-        return _basket;
+        public Basket WithOneBasketItem()
+        {
+            _basket = new Basket { BuyerId = BasketBuyerId, Id = BasketId };
+            _basket.AddItem(2, 3.40m, 4);
+            return _basket;
+        }
     }
 }

@@ -1,75 +1,48 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.eShopWeb.ApplicationCore.Specifications;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
-using Microsoft.eShopWeb.ApplicationCore.Specifications;
-using Moq;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
-namespace Microsoft.eShopWeb.UnitTests.ApplicationCore.Specifications;
-
-public class BasketWithItems
+namespace Microsoft.eShopWeb.UnitTests
 {
-    private readonly int _testBasketId = 123;
-    private readonly string _buyerId = "Test buyerId";
-
-    [Fact]
-    public void MatchesBasketWithGivenBasketId()
+    public class BasketWithItems
     {
-        var spec = new BasketWithItemsSpecification(_testBasketId);
+        private int _testBasketId = 123;
 
-        var result = spec.Evaluate(GetTestBasketCollection()).FirstOrDefault();
+        [Fact]
+        public void MatchesBasketWithGivenId()
+        {
+            var spec = new BasketWithItemsSpecification(_testBasketId);
 
-        Assert.NotNull(result);
-        Assert.Equal(_testBasketId, result.Id);
-    }
+            var result = GetTestBasketCollection()
+                .AsQueryable()
+                .FirstOrDefault(spec.Criteria);
 
-    [Fact]
-    public void MatchesNoBasketsIfBasketIdNotPresent()
-    {
-        int badBasketId = -1;
-        var spec = new BasketWithItemsSpecification(badBasketId);
+            Assert.NotNull(result);
+            Assert.Equal(_testBasketId, result.Id);
 
-        var result = spec.Evaluate(GetTestBasketCollection()).Any();
+        }
 
-        Assert.False(result);
-    }
+        [Fact]
+        public void MatchesNoBasketsIfIdNotPresent()
+        {
+            int badId = -1;
+            var spec = new BasketWithItemsSpecification(badId);
 
-    [Fact]
-    public void MatchesBasketWithGivenBuyerId()
-    {
-        var spec = new BasketWithItemsSpecification(_buyerId);
+            Assert.False(GetTestBasketCollection()
+                .AsQueryable()
+                .Any(spec.Criteria));
+        }
 
-        var result = spec.Evaluate(GetTestBasketCollection()).FirstOrDefault();
-
-        Assert.NotNull(result);
-        Assert.Equal(_buyerId, result.BuyerId);
-    }
-
-    [Fact]
-    public void MatchesNoBasketsIfBuyerIdNotPresent()
-    {
-        string badBuyerId = "badBuyerId";
-        var spec = new BasketWithItemsSpecification(badBuyerId);
-
-        var result = spec.Evaluate(GetTestBasketCollection()).Any();
-
-        Assert.False(result);
-    }
-
-    public List<Basket> GetTestBasketCollection()
-    {
-        var basket1Mock = new Mock<Basket>(_buyerId);
-        basket1Mock.SetupGet(s => s.Id).Returns(1);
-        var basket2Mock = new Mock<Basket>(_buyerId);
-        basket2Mock.SetupGet(s => s.Id).Returns(2);
-        var basket3Mock = new Mock<Basket>(_buyerId);
-        basket3Mock.SetupGet(s => s.Id).Returns(_testBasketId);
-
-        return new List<Basket>()
+        public List<Basket> GetTestBasketCollection()
+        {
+            return new List<Basket>()
             {
-                basket1Mock.Object,
-                basket2Mock.Object,
-                basket3Mock.Object
+                new Basket() { Id = 1 },
+                new Basket() { Id = 2 },
+                new Basket() { Id = _testBasketId }
             };
+        }
     }
 }

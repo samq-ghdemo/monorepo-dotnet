@@ -8,37 +8,38 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 
-namespace Microsoft.eShopWeb.Web.Areas.Identity.Pages.Account;
-
-[AllowAnonymous]
-public class ConfirmEmailModel : PageModel
+namespace Microsoft.eShopWeb.Web.Areas.Identity.Pages.Account
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public ConfirmEmailModel(UserManager<ApplicationUser> userManager)
+    [AllowAnonymous]
+    public class ConfirmEmailModel : PageModel
     {
-        _userManager = userManager;
-    }
+        private readonly UserManager<ApplicationUser> _userManager;
 
-    public async Task<IActionResult> OnGetAsync(string userId, string code)
-    {
-        if (userId == null || code == null)
+        public ConfirmEmailModel(UserManager<ApplicationUser> userManager)
         {
-            return RedirectToPage("/Index");
+            _userManager = userManager;
         }
 
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user == null)
+        public async Task<IActionResult> OnGetAsync(string userId, string code)
         {
-            return NotFound($"Unable to load user with ID '{userId}'.");
-        }
+            if (userId == null || code == null)
+            {
+                return RedirectToPage("/Index");
+            }
 
-        var result = await _userManager.ConfirmEmailAsync(user, code);
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException($"Error confirming email for user with ID '{userId}':");
-        }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{userId}'.");
+            }
 
-        return Page();
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Error confirming email for user with ID '{userId}':");
+            }
+
+            return Page();
+        }
     }
 }

@@ -1,59 +1,51 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Web.Interfaces;
+using Microsoft.eShopWeb.Web.Pages.Basket;
 using Microsoft.eShopWeb.Web.ViewModels;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Microsoft.eShopWeb.Web.Pages.Shared.Components.BasketComponent;
-
-public class Basket : ViewComponent
+namespace Microsoft.eShopWeb.Web.Pages.Shared.Components.BasketComponent
 {
-    private readonly IBasketViewModelService _basketService;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-
-    public Basket(IBasketViewModelService basketService,
-                    SignInManager<ApplicationUser> signInManager)
+    public class Basket : ViewComponent
     {
-        _basketService = basketService;
-        _signInManager = signInManager;
-    }
+        private readonly IBasketViewModelService _basketService;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-    public async Task<IViewComponentResult> InvokeAsync()
-    {
-        var vm = new BasketComponentViewModel
+        public Basket(IBasketViewModelService basketService,
+                        SignInManager<ApplicationUser> signInManager)
         {
-            ItemsCount = await CountTotalBasketItems()
-        };
-        return View(vm);
-    }
-
-    private async Task<int> CountTotalBasketItems()
-    {
-        if (_signInManager.IsSignedIn(HttpContext.User))
-        {
-            return await _basketService.CountTotalBasketItems(User.Identity.Name);
+            _basketService = basketService;
+            _signInManager = signInManager;
         }
 
-        string anonymousId = GetAnnonymousIdFromCookie();
-        if (anonymousId == null)
-            return 0;
-
-        return await _basketService.CountTotalBasketItems(anonymousId);
-    }
-
-    private string GetAnnonymousIdFromCookie()
-    {
-        if (Request.Cookies.ContainsKey(Constants.BASKET_COOKIENAME))
+        public async Task<IViewComponentResult> InvokeAsync(string userName)
         {
-            var id = Request.Cookies[Constants.BASKET_COOKIENAME];
+            var vm = new BasketComponentViewModel();
+            vm.ItemsCount = (await GetBasketViewModelAsync()).Items.Sum(i => i.Quantity);
+            return View(vm);
+        }
 
-            if (Guid.TryParse(id, out var _))
+        private async Task<BasketViewModel> GetBasketViewModelAsync()
+        {
+            if (_signInManager.IsSignedIn(HttpContext.User))
             {
-                return id;
+                return await _basketService.GetOrCreateBasketForUser(User.Identity.Name);
             }
+            string anonymousId = GetBasketIdFromCookie();
+            if (anonymousId == null) return new BasketViewModel();
+            return await _basketService.GetOrCreateBasketForUser(anonymousId);
         }
-        return null;
+
+        private string GetBasketIdFromCookie()
+        {
+            if (Request.Cookies.ContainsKey(Constants.BASKET_COOKIENAME))
+            {
+                return Request.Cookies[Constants.BASKET_COOKIENAME];
+            }
+            return null;
+        }
     }
 }

@@ -1,41 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.eShopWeb.ApplicationCore.Interfaces;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
-namespace Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
-
-public class Basket : BaseEntity, IAggregateRoot
+namespace Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate
 {
-    public string BuyerId { get; private set; }
-    private readonly List<BasketItem> _items = new List<BasketItem>();
-    public IReadOnlyCollection<BasketItem> Items => _items.AsReadOnly();
-
-    public int TotalItems => _items.Sum(i => i.Quantity);
-
-
-    public Basket(string buyerId)
+    public class Basket : BaseEntity, IAggregateRoot
     {
-        BuyerId = buyerId;
-    }
+        public string BuyerId { get; set; }
+        private readonly List<BasketItem> _items = new List<BasketItem>();
+        public IReadOnlyCollection<BasketItem> Items => _items.AsReadOnly();
 
-    public void AddItem(int catalogItemId, decimal unitPrice, int quantity = 1)
-    {
-        if (!Items.Any(i => i.CatalogItemId == catalogItemId))
+        public void AddItem(int catalogItemId, decimal unitPrice, int quantity = 1)
         {
-            _items.Add(new BasketItem(catalogItemId, quantity, unitPrice));
-            return;
+            if (!Items.Any(i => i.CatalogItemId == catalogItemId))
+            {
+                _items.Add(new BasketItem()
+                {
+                    CatalogItemId = catalogItemId,
+                    Quantity = quantity,
+                    UnitPrice = unitPrice
+                });
+                return;
+            }
+            var existingItem = Items.FirstOrDefault(i => i.CatalogItemId == catalogItemId);
+            existingItem.Quantity += quantity;
         }
-        var existingItem = Items.FirstOrDefault(i => i.CatalogItemId == catalogItemId);
-        existingItem.AddQuantity(quantity);
-    }
 
-    public void RemoveEmptyItems()
-    {
-        _items.RemoveAll(i => i.Quantity == 0);
-    }
-
-    public void SetNewBuyerId(string buyerId)
-    {
-        BuyerId = buyerId;
+        public void RemoveEmptyItems()
+        {
+            _items.RemoveAll(i => i.Quantity == 0);
+        }
     }
 }

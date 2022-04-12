@@ -1,13 +1,14 @@
-﻿using Ardalis.Specification;
-using Microsoft.eShopWeb.ApplicationCore.Entities;
+﻿using Microsoft.eShopWeb.ApplicationCore.Entities;
 
-namespace Microsoft.eShopWeb.ApplicationCore.Specifications;
-
-public class CatalogFilterSpecification : Specification<CatalogItem>
+namespace Microsoft.eShopWeb.ApplicationCore.Specifications
 {
-    public CatalogFilterSpecification(int? brandId, int? typeId)
+
+    public class CatalogFilterSpecification : BaseSpecification<CatalogItem>
     {
-        Query.Where(i => (!brandId.HasValue || i.CatalogBrandId == brandId) &&
-            (!typeId.HasValue || i.CatalogTypeId == typeId));
+        public CatalogFilterSpecification(int? brandId, int? typeId)
+            : base(i => (!brandId.HasValue || i.CatalogBrandId == brandId) &&
+                (!typeId.HasValue || i.CatalogTypeId == typeId))
+        {
+        }
     }
 }

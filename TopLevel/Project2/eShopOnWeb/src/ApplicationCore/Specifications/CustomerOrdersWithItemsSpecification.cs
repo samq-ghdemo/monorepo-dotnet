@@ -1,14 +1,14 @@
-﻿using Ardalis.Specification;
-using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
+﻿using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 
-namespace Microsoft.eShopWeb.ApplicationCore.Specifications;
-
-public class CustomerOrdersWithItemsSpecification : Specification<Order>
+namespace Microsoft.eShopWeb.ApplicationCore.Specifications
 {
-    public CustomerOrdersWithItemsSpecification(string buyerId)
+    public class CustomerOrdersWithItemsSpecification : BaseSpecification<Order>
     {
-        Query.Where(o => o.BuyerId == buyerId)
-            .Include(o => o.OrderItems)
-                .ThenInclude(i => i.ItemOrdered);
+        public CustomerOrdersWithItemsSpecification(string buyerId)
+            : base(o => o.BuyerId == buyerId)
+        {
+            AddInclude(o => o.OrderItems);
+            AddInclude($"{nameof(Order.OrderItems)}.{nameof(OrderItem.ItemOrdered)}");
+        }
     }
 }

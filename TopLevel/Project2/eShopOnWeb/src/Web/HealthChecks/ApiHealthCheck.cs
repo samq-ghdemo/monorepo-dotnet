@@ -1,34 +1,40 @@
-﻿using System.Net.Http;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using BlazorShared;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
 
-namespace Microsoft.eShopWeb.Web.HealthChecks;
-
-public class ApiHealthCheck : IHealthCheck
+namespace Microsoft.eShopWeb.Web.HealthChecks
 {
-    private readonly BaseUrlConfiguration _baseUrlConfiguration;
-
-    public ApiHealthCheck(IOptions<BaseUrlConfiguration> baseUrlConfiguration)
+    public class ApiHealthCheck : IHealthCheck
     {
-        _baseUrlConfiguration = baseUrlConfiguration.Value;
-    }
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly LinkGenerator _linkGenerator;
 
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default(CancellationToken))
-    {
-        string myUrl = _baseUrlConfiguration.ApiBase + "catalog-items";
-        var client = new HttpClient();
-        var response = await client.GetAsync(myUrl);
-        var pageContents = await response.Content.ReadAsStringAsync();
-        if (pageContents.Contains(".NET Bot Black Sweatshirt"))
+        public ApiHealthCheck(IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
         {
-            return HealthCheckResult.Healthy("The check indicates a healthy result.");
+            _httpContextAccessor = httpContextAccessor;
+            _linkGenerator = linkGenerator;
         }
 
-        return HealthCheckResult.Unhealthy("The check indicates an unhealthy result.");
+        public async Task<HealthCheckResult> CheckHealthAsync(
+            HealthCheckContext context,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var request = _httpContextAccessor.HttpContext.Request;
+
+            string apiLink = _linkGenerator.GetPathByAction("List", "Catalog");
+            string myUrl = request.Scheme + "://" + request.Host.ToString() + apiLink;
+            var client = new HttpClient();
+            var response = await client.GetAsync(myUrl);
+            var pageContents = await response.Content.ReadAsStringAsync();
+            if (pageContents.Contains(".NET Bot Black Sweatshirt"))
+            {
+                return HealthCheckResult.Healthy("The check indicates a healthy result.");
+            }
+
+            return HealthCheckResult.Unhealthy("The check indicates an unhealthy result.");
+        }
     }
 }

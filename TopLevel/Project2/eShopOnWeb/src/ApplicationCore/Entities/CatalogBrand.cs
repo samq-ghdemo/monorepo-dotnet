@@ -1,12 +1,9 @@
 ﻿using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 
-namespace Microsoft.eShopWeb.ApplicationCore.Entities;
-
-public class CatalogBrand : BaseEntity, IAggregateRoot
+namespace Microsoft.eShopWeb.ApplicationCore.Entities
 {
-    public string Brand { get; private set; }
-    public CatalogBrand(string brand)
+    public class CatalogBrand : BaseEntity, IAggregateRoot
     {
-        Brand = brand;
+        public string Brand { get; set; }
     }
 }

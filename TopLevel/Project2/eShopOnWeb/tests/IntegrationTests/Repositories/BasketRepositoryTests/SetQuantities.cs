@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
@@ -8,33 +9,34 @@ using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.UnitTests.Builders;
 using Xunit;
 
-namespace Microsoft.eShopWeb.IntegrationTests.Repositories.BasketRepositoryTests;
-
-public class SetQuantities
+namespace Microsoft.eShopWeb.IntegrationTests.Repositories.BasketRepositoryTests
 {
-    private readonly CatalogContext _catalogContext;
-    private readonly EfRepository<Basket> _basketRepository;
-    private readonly BasketBuilder BasketBuilder = new BasketBuilder();
-
-    public SetQuantities()
+    public class SetQuantities
     {
-        var dbOptions = new DbContextOptionsBuilder<CatalogContext>()
-            .UseInMemoryDatabase(databaseName: "TestCatalog")
-            .Options;
-        _catalogContext = new CatalogContext(dbOptions);
-        _basketRepository = new EfRepository<Basket>(_catalogContext);
-    }
+        private readonly CatalogContext _catalogContext;
+        private readonly IAsyncRepository<Basket> _basketRepository;
+        private readonly BasketBuilder BasketBuilder = new BasketBuilder();
 
-    [Fact]
-    public async Task RemoveEmptyQuantities()
-    {
-        var basket = BasketBuilder.WithOneBasketItem();
-        var basketService = new BasketService(_basketRepository, null);
-        await _basketRepository.AddAsync(basket);
-        _catalogContext.SaveChanges();
+        public SetQuantities()
+        {
+            var dbOptions = new DbContextOptionsBuilder<CatalogContext>()
+                .UseInMemoryDatabase(databaseName: "TestCatalog")
+                .Options;
+            _catalogContext = new CatalogContext(dbOptions);
+            _basketRepository = new EfRepository<Basket>(_catalogContext);
+        }
 
-        await basketService.SetQuantities(BasketBuilder.BasketId, new Dictionary<string, int>() { { BasketBuilder.BasketId.ToString(), 0 } });
+        [Fact]
+        public async Task RemoveEmptyQuantities()
+        {
+            var basket = BasketBuilder.WithOneBasketItem();
+            var basketService = new BasketService(_basketRepository, null);
+            await _basketRepository.AddAsync(basket);
+            _catalogContext.SaveChanges();
 
-        Assert.Equal(0, basket.Items.Count);
+            await basketService.SetQuantities(BasketBuilder.BasketId, new Dictionary<string, int>() { { BasketBuilder.BasketId.ToString(), 0 } });
+
+            Assert.Equal(0, basket.Items.Count);
+        }
     }
 }

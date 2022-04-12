@@ -1,101 +1,99 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.eShopWeb.ApplicationCore.Entities;
+﻿using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Microsoft.eShopWeb.Infrastructure.Data;
-
-public class CatalogContextSeed
+namespace Microsoft.eShopWeb.Infrastructure.Data
 {
-    public static async Task SeedAsync(CatalogContext catalogContext,
-        ILogger logger,
-        int retry = 0)
+    public class CatalogContextSeed
     {
-        var retryForAvailability = retry;
-        try
+        public static async Task SeedAsync(CatalogContext catalogContext,
+            ILoggerFactory loggerFactory, int? retry = 0)
         {
-            if (catalogContext.Database.IsSqlServer())
+            int retryForAvailability = retry.Value;
+            try
             {
-                catalogContext.Database.Migrate();
+                // TODO: Only run this if using a real database
+                // context.Database.Migrate();
+
+                if (!catalogContext.CatalogBrands.Any())
+                {
+                    catalogContext.CatalogBrands.AddRange(
+                        GetPreconfiguredCatalogBrands());
+
+                    await catalogContext.SaveChangesAsync();
+                }
+
+                if (!catalogContext.CatalogTypes.Any())
+                {
+                    catalogContext.CatalogTypes.AddRange(
+                        GetPreconfiguredCatalogTypes());
+
+                    await catalogContext.SaveChangesAsync();
+                }
+
+                if (!catalogContext.CatalogItems.Any())
+                {
+                    catalogContext.CatalogItems.AddRange(
+                        GetPreconfiguredItems());
+
+                    await catalogContext.SaveChangesAsync();
+                }
             }
-
-            if (!await catalogContext.CatalogBrands.AnyAsync())
+            catch (Exception ex)
             {
-                await catalogContext.CatalogBrands.AddRangeAsync(
-                    GetPreconfiguredCatalogBrands());
-
-                await catalogContext.SaveChangesAsync();
-            }
-
-            if (!await catalogContext.CatalogTypes.AnyAsync())
-            {
-                await catalogContext.CatalogTypes.AddRangeAsync(
-                    GetPreconfiguredCatalogTypes());
-
-                await catalogContext.SaveChangesAsync();
-            }
-
-            if (!await catalogContext.CatalogItems.AnyAsync())
-            {
-                await catalogContext.CatalogItems.AddRangeAsync(
-                    GetPreconfiguredItems());
-
-                await catalogContext.SaveChangesAsync();
+                if (retryForAvailability < 10)
+                {
+                    retryForAvailability++;
+                    var log = loggerFactory.CreateLogger<CatalogContextSeed>();
+                    log.LogError(ex.Message);
+                    await SeedAsync(catalogContext, loggerFactory, retryForAvailability);
+                }
             }
         }
-        catch (Exception ex)
+
+        static IEnumerable<CatalogBrand> GetPreconfiguredCatalogBrands()
         {
-            if (retryForAvailability >= 10) throw;
-
-            retryForAvailability++;
-            
-            logger.LogError(ex.Message);
-            await SeedAsync(catalogContext, logger, retryForAvailability);
-            throw;
+            return new List<CatalogBrand>()
+            {
+                new CatalogBrand() { Brand = "Azure"},
+                new CatalogBrand() { Brand = ".NET" },
+                new CatalogBrand() { Brand = "Visual Studio" },
+                new CatalogBrand() { Brand = "SQL Server" }, 
+                new CatalogBrand() { Brand = "Other" }
+            };
         }
-    }
 
-    static IEnumerable<CatalogBrand> GetPreconfiguredCatalogBrands()
-    {
-        return new List<CatalogBrand>
+        static IEnumerable<CatalogType> GetPreconfiguredCatalogTypes()
+        {
+            return new List<CatalogType>()
             {
-                new("Azure"),
-                new(".NET"),
-                new("Visual Studio"),
-                new("SQL Server"),
-                new("Other")
+                new CatalogType() { Type = "Mug"},
+                new CatalogType() { Type = "T-Shirt" },
+                new CatalogType() { Type = "Sheet" },
+                new CatalogType() { Type = "USB Memory Stick" }
             };
-    }
+        }
 
-    static IEnumerable<CatalogType> GetPreconfiguredCatalogTypes()
-    {
-        return new List<CatalogType>
+        static IEnumerable<CatalogItem> GetPreconfiguredItems()
+        {
+            return new List<CatalogItem>()
             {
-                new("Mug"),
-                new("T-Shirt"),
-                new("Sheet"),
-                new("USB Memory Stick")
+                new CatalogItem() { CatalogTypeId=2,CatalogBrandId=2, Description = ".NET Bot Black Sweatshirt", Name = ".NET Bot Black Sweatshirt", Price = 19.5M, PictureUri = "http://catalogbaseurltobereplaced/images/products/1.png" },
+                new CatalogItem() { CatalogTypeId=1,CatalogBrandId=2, Description = ".NET Black & White Mug", Name = ".NET Black & White Mug", Price= 8.50M, PictureUri = "http://catalogbaseurltobereplaced/images/products/2.png" },
+                new CatalogItem() { CatalogTypeId=2,CatalogBrandId=5, Description = "Prism White T-Shirt", Name = "Prism White T-Shirt", Price = 12, PictureUri = "http://catalogbaseurltobereplaced/images/products/3.png" },
+                new CatalogItem() { CatalogTypeId=2,CatalogBrandId=2, Description = ".NET Foundation Sweatshirt", Name = ".NET Foundation Sweatshirt", Price = 12, PictureUri = "http://catalogbaseurltobereplaced/images/products/4.png" },
+                new CatalogItem() { CatalogTypeId=3,CatalogBrandId=5, Description = "Roslyn Red Sheet", Name = "Roslyn Red Sheet", Price = 8.5M, PictureUri = "http://catalogbaseurltobereplaced/images/products/5.png" },
+                new CatalogItem() { CatalogTypeId=2,CatalogBrandId=2, Description = ".NET Blue Sweatshirt", Name = ".NET Blue Sweatshirt", Price = 12, PictureUri = "http://catalogbaseurltobereplaced/images/products/6.png" },
+                new CatalogItem() { CatalogTypeId=2,CatalogBrandId=5, Description = "Roslyn Red T-Shirt", Name = "Roslyn Red T-Shirt", Price = 12, PictureUri = "http://catalogbaseurltobereplaced/images/products/7.png"  },
+                new CatalogItem() { CatalogTypeId=2,CatalogBrandId=5, Description = "Kudu Purple Sweatshirt", Name = "Kudu Purple Sweatshirt", Price = 8.5M, PictureUri = "http://catalogbaseurltobereplaced/images/products/8.png" },
+                new CatalogItem() { CatalogTypeId=1,CatalogBrandId=5, Description = "Cup<T> White Mug", Name = "Cup<T> White Mug", Price = 12, PictureUri = "http://catalogbaseurltobereplaced/images/products/9.png" },
+                new CatalogItem() { CatalogTypeId=3,CatalogBrandId=2, Description = ".NET Foundation Sheet", Name = ".NET Foundation Sheet", Price = 12, PictureUri = "http://catalogbaseurltobereplaced/images/products/10.png" },
+                new CatalogItem() { CatalogTypeId=3,CatalogBrandId=2, Description = "Cup<T> Sheet", Name = "Cup<T> Sheet", Price = 8.5M, PictureUri = "http://catalogbaseurltobereplaced/images/products/11.png" },
+                new CatalogItem() { CatalogTypeId=2,CatalogBrandId=5, Description = "Prism White TShirt", Name = "Prism White TShirt", Price = 12, PictureUri = "http://catalogbaseurltobereplaced/images/products/12.png" }
             };
-    }
-
-    static IEnumerable<CatalogItem> GetPreconfiguredItems()
-    {
-        return new List<CatalogItem>
-            {
-                new(2,2, ".NET Bot Black Sweatshirt", ".NET Bot Black Sweatshirt", 19.5M,  "http://catalogbaseurltobereplaced/images/products/1.png"),
-                new(1,2, ".NET Black & White Mug", ".NET Black & White Mug", 8.50M, "http://catalogbaseurltobereplaced/images/products/2.png"),
-                new(2,5, "Prism White T-Shirt", "Prism White T-Shirt", 12,  "http://catalogbaseurltobereplaced/images/products/3.png"),
-                new(2,2, ".NET Foundation Sweatshirt", ".NET Foundation Sweatshirt", 12, "http://catalogbaseurltobereplaced/images/products/4.png"),
-                new(3,5, "Roslyn Red Sheet", "Roslyn Red Sheet", 8.5M, "http://catalogbaseurltobereplaced/images/products/5.png"),
-                new(2,2, ".NET Blue Sweatshirt", ".NET Blue Sweatshirt", 12, "http://catalogbaseurltobereplaced/images/products/6.png"),
-                new(2,5, "Roslyn Red T-Shirt", "Roslyn Red T-Shirt",  12, "http://catalogbaseurltobereplaced/images/products/7.png"),
-                new(2,5, "Kudu Purple Sweatshirt", "Kudu Purple Sweatshirt", 8.5M, "http://catalogbaseurltobereplaced/images/products/8.png"),
-                new(1,5, "Cup<T> White Mug", "Cup<T> White Mug", 12, "http://catalogbaseurltobereplaced/images/products/9.png"),
-                new(3,2, ".NET Foundation Sheet", ".NET Foundation Sheet", 12, "http://catalogbaseurltobereplaced/images/products/10.png"),
-                new(3,2, "Cup<T> Sheet", "Cup<T> Sheet", 8.5M, "http://catalogbaseurltobereplaced/images/products/11.png"),
-                new(2,5, "Prism White TShirt", "Prism White TShirt", 12, "http://catalogbaseurltobereplaced/images/products/12.png")
-            };
+        }
     }
 }

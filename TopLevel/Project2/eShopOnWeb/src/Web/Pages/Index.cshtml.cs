@@ -1,23 +1,26 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.eShopWeb.Web.Services;
 using Microsoft.eShopWeb.Web.ViewModels;
+using System.Threading.Tasks;
 
-namespace Microsoft.eShopWeb.Web.Pages;
-
-public class IndexModel : PageModel
+namespace Microsoft.eShopWeb.Web.Pages
 {
-    private readonly ICatalogViewModelService _catalogViewModelService;
-
-    public IndexModel(ICatalogViewModelService catalogViewModelService)
+    public class IndexModel : PageModel
     {
-        _catalogViewModelService = catalogViewModelService;
-    }
+        private readonly ICatalogViewModelService _catalogViewModelService;
 
-    public CatalogIndexViewModel CatalogModel { get; set; } = new CatalogIndexViewModel();
+        public IndexModel(ICatalogViewModelService catalogViewModelService)
+        {
+            _catalogViewModelService = catalogViewModelService;
+        }
 
-    public async Task OnGet(CatalogIndexViewModel catalogModel, int? pageId)
-    {
-        CatalogModel = await _catalogViewModelService.GetCatalogItems(pageId ?? 0, Constants.ITEMS_PER_PAGE, catalogModel.BrandFilterApplied, catalogModel.TypesFilterApplied);
+        public CatalogIndexViewModel CatalogModel { get; set; } = new CatalogIndexViewModel();
+
+        public async Task OnGet(CatalogIndexViewModel catalogModel, int? pageId)
+        {
+            CatalogModel = await _catalogViewModelService.GetCatalogItems(pageId ?? 0, Constants.ITEMS_PER_PAGE, catalogModel.BrandFilterApplied, catalogModel.TypesFilterApplied);
+        }
+
+
     }
 }

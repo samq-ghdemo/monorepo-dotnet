@@ -1,6 +1,7 @@
-﻿namespace Microsoft.eShopWeb.ApplicationCore.Interfaces;
-
-public interface IUriComposer
+﻿namespace Microsoft.eShopWeb.ApplicationCore.Interfaces
 {
-    string ComposePicUri(string uriTemplate);
+    public interface IUriComposer
+    {
+        string ComposePicUri(string uriTemplate);
+    }
 }

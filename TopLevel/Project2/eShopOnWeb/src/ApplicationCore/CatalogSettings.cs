@@ -1,6 +1,7 @@
-﻿namespace Microsoft.eShopWeb;
-
-public class CatalogSettings
+﻿namespace Microsoft.eShopWeb
 {
-    public string CatalogBaseUrl { get; set; }
+    public class CatalogSettings
+    {
+        public string CatalogBaseUrl { get; set; }
+    }
 }

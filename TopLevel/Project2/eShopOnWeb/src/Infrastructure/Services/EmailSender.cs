@@ -1,15 +1,16 @@
-﻿using System.Threading.Tasks;
-using Microsoft.eShopWeb.ApplicationCore.Interfaces;
+﻿using Microsoft.eShopWeb.ApplicationCore.Interfaces;
+using System.Threading.Tasks;
 
-namespace Microsoft.eShopWeb.Infrastructure.Services;
-
-// This class is used by the application to send email for account confirmation and password reset.
-// For more details see https://go.microsoft.com/fwlink/?LinkID=532713
-public class EmailSender : IEmailSender
+namespace Microsoft.eShopWeb.Infrastructure.Services
 {
-    public Task SendEmailAsync(string email, string subject, string message)
+    // This class is used by the application to send email for account confirmation and password reset.
+    // For more details see https://go.microsoft.com/fwlink/?LinkID=532713
+    public class EmailSender : IEmailSender
     {
-        // TODO: Wire this up to actual email sending logic via SendGrid, local SMTP, etc.
-        return Task.CompletedTask;
+        public Task SendEmailAsync(string email, string subject, string message)
+        {
+            // TODO: Wire this up to actual email sending logic via SendGrid, local SMTP, etc.
+            return Task.CompletedTask;
+        }
     }
 }

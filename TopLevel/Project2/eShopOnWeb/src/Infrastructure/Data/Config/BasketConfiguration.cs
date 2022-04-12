@@ -2,17 +2,18 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
 
-namespace Microsoft.eShopWeb.Infrastructure.Data.Config;
-
-public class BasketConfiguration : IEntityTypeConfiguration<Basket>
+namespace Microsoft.eShopWeb.Infrastructure.Data.Config
 {
-    public void Configure(EntityTypeBuilder<Basket> builder)
+    public class BasketConfiguration : IEntityTypeConfiguration<Basket>
     {
-        var navigation = builder.Metadata.FindNavigation(nameof(Basket.Items));
-        navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+        public void Configure(EntityTypeBuilder<Basket> builder)
+        {
+            var navigation = builder.Metadata.FindNavigation(nameof(Basket.Items));
+            navigation.SetPropertyAccessMode(PropertyAccessMode.Field);
 
-        builder.Property(b => b.BuyerId)
-            .IsRequired()
-            .HasMaxLength(256);
+            builder.Property(b => b.BuyerId)
+                .IsRequired()
+                .HasMaxLength(40);
+        }
     }
 }

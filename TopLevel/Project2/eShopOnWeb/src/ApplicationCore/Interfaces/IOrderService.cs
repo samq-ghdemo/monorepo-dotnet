@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
+﻿using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
+using System.Threading.Tasks;
 
-namespace Microsoft.eShopWeb.ApplicationCore.Interfaces;
-
-public interface IOrderService
+namespace Microsoft.eShopWeb.ApplicationCore.Interfaces
 {
-    Task CreateOrderAsync(int basketId, Address shippingAddress);
+    public interface IOrderService
+    {
+        Task CreateOrderAsync(int basketId, Address shippingAddress);
+    }
 }
